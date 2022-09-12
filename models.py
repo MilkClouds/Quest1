@@ -6,7 +6,7 @@ from arcfaceloss import *
 # model = timm.create_model('vit_tiny_r_s16_p8_224', pretrained=True)
 # print(timm.list_models('*vit*'))
 
-NUM_CLASSES = 102
+NUM_CLASSES = 102 # 102 if need
 
 class RexNet100(nn.Module):
     def __init__(self, enet_type, out_dim, load_pretrained=True):
@@ -21,14 +21,19 @@ class RexNet100(nn.Module):
         self.enet.head.fc = nn.Identity()
 
     def forward(self, x):
+        return self.enet(x)
         return self.metric_classify(self.swish(self.feat(self.enet(x))))
 
-def getModel():
-    # model = timm.create_model('vit_tiny_r_s16_p8_224', pretrained=True, num_classes=NUM_CLASSES)
+def getModels(mode):
+    teacher_model = timm.create_model('vit_tiny_r_s16_p8_224', pretrained=True, num_classes=NUM_CLASSES)
     # logging.info(count_parameters(model))
-    # freeze_model(model, fine_tuning=False)
+    freeze_model(teacher_model, fine_tuning=False)
+    teacher_model.eval()
     # logging.info(count_parameters(model))
 
-    model = timm.create_model('rexnet_100', pretrained=False, num_classes=NUM_CLASSES) # 3.64M
-    logging.info(f'Model params: {count_parameters(model)/1e6:.3f}M')
-    return model
+    student_model = timm.create_model('rexnet_100', pretrained=True, num_classes=NUM_CLASSES) # 3.64M
+    # student_model = timm.create_model('vit_tiny_r_s16_p8_224', pretrained=True, num_classes=NUM_CLASSES)
+    # freeze_model(student_model)
+    logging.info(f'teacher_model params: {count_parameters(teacher_model)/1e6:.3f}M')
+    logging.info(f'student_model params: {count_parameters(student_model)/1e6:.3f}M')
+    return teacher_model, student_model

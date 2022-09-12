@@ -1,3 +1,4 @@
+# ref: https://www.kaggle.com/c/landmark-recognition-2020/discussion/187757
 import math
 import numpy as np
 import torch
